@@ -28,4 +28,4 @@ pnpm-debug.log*
 # OS files
 .DS_Store
 Thumbs.db
-*.backup.*
+*.backup.*.env.postgres
