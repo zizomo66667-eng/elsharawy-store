@@ -29,3 +29,7 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 *.backup.*.env.postgres
+.env.postgres
+generated/
+prisma\dev.db.backup2
+*.backup.tsx
