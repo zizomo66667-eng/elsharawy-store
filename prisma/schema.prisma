@@ -1,0 +1,292 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  role         Role     @default(ADMIN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model Theme {
+  id        String   @id @default(cuid())
+  name      String
+  isActive  Boolean  @default(false)
+  isDraft   Boolean  @default(true)
+  config    Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ThemePreset {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  config      Json
+  createdAt   DateTime @default(now())
+}
+
+model Brand {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  logo      String?
+  isActive  Boolean   @default(true)
+  sortOrder Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String
+  nameAr      String?
+  slug        String     @unique
+  description String?
+  image       String?
+  parentId    String?
+  isActive    Boolean    @default(true)
+  sortOrder   Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryTree")
+  products    Product[]
+}
+
+model Product {
+  id                String           @id @default(cuid())
+  name              String
+  nameAr            String?
+  slug              String           @unique
+  description       String?
+  descriptionAr     String?
+  sku               String?          @unique
+  barcode           String?          @unique
+  price             Float
+  compareAtPrice    Float?
+  costPrice         Float?
+  brandId           String?
+  categoryId        String?
+  isActive          Boolean          @default(true)
+  isFeatured        Boolean          @default(false)
+  isNew             Boolean          @default(false)
+  isBestSeller      Boolean          @default(false)
+  stockQuantity     Int              @default(0)
+  lowStockThreshold Int              @default(5)
+  tags              String?
+  metaTitle         String?
+  metaDescription   String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  orderItems        OrderItem[]
+  category          Category?        @relation(fields: [categoryId], references: [id])
+  brand             Brand?           @relation(fields: [brandId], references: [id])
+  images            ProductImage[]
+  variants          ProductVariant[]
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  url       String
+  alt       String?
+  sortOrder Int     @default(0)
+  isPrimary Boolean @default(false)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model ProductVariant {
+  id            String  @id @default(cuid())
+  productId     String
+  size          String?
+  color         String?
+  colorHex      String?
+  sku           String? @unique
+  barcode       String?
+  price         Float?
+  stockQuantity Int     @default(0)
+  isActive      Boolean @default(true)
+  product       Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model HomepageSection {
+  id        String      @id @default(cuid())
+  type      SectionType
+  title     String?
+  titleAr   String?
+  subtitle  String?
+  config    Json
+  isVisible Boolean     @default(true)
+  sortOrder Int         @default(0)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  email     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+}
+
+model Order {
+  id             String               @id @default(cuid())
+  orderNumber    String               @unique
+  customerId     String?
+  customerName   String
+  customerPhone  String
+  governorate    String
+  city           String
+  address        String
+  notes          String?
+  status         OrderStatus          @default(PENDING)
+  paymentMethod  PaymentMethod        @default(CASH_ON_DELIVERY)
+  subtotal       Float
+  discountAmount Float                @default(0)
+  shippingFee    Float                @default(0)
+  total          Float
+  couponCode     String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  customer       Customer?            @relation(fields: [customerId], references: [id])
+  items          OrderItem[]
+  statusHistory  OrderStatusHistory[]
+}
+
+model OrderItem {
+  id           String   @id @default(cuid())
+  orderId      String
+  productId    String?
+  variantId    String?
+  productName  String
+  productImage String?
+  variantInfo  String?
+  size         String?
+  color        String?
+  quantity     Int
+  unitPrice    Float
+  totalPrice   Float
+  product      Product? @relation(fields: [productId], references: [id])
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model OrderStatusHistory {
+  id        String      @id @default(cuid())
+  orderId   String
+  status    OrderStatus
+  note      String?
+  createdAt DateTime    @default(now())
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Coupon {
+  id             String     @id @default(cuid())
+  code           String     @unique
+  type           CouponType
+  value          Float
+  minOrderAmount Float?
+  maxUses        Int?
+  usedCount      Int        @default(0)
+  startsAt       DateTime?
+  endsAt         DateTime?
+  isActive       Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model Banner {
+  id           String    @id @default(cuid())
+  title        String?
+  imageDesktop String
+  imageMobile  String?
+  link         String?
+  isActive     Boolean   @default(true)
+  sortOrder    Int       @default(0)
+  startsAt     DateTime?
+  endsAt       DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model HeroBanner {
+  id           String    @id @default(cuid())
+  title        String?
+  description  String?
+  buttonText   String?
+  buttonLink   String?
+  imageDesktop String
+  imageMobile  String?
+  textPosition String    @default("center")
+  overlay      Boolean   @default(true)
+  height       String    @default("large")
+  isActive     Boolean   @default(true)
+  sortOrder    Int       @default(0)
+  duration     Int       @default(5000)
+  startsAt     DateTime?
+  endsAt       DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+enum Role {
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum SectionType {
+  HERO
+  CATEGORY_GRID
+  PRODUCT_SLIDER
+  PRODUCT_GRID
+  FEATURED_PRODUCTS
+  NEW_ARRIVALS
+  BEST_SELLERS
+  OFFERS
+  BRANDS
+  TESTIMONIALS
+  INSTAGRAM
+  NEWSLETTER
+  FEATURES
+  CUSTOM_HTML
+  BANNER
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH_ON_DELIVERY
+  VODAFONE_CASH
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED
+}
