@@ -21,8 +21,8 @@ type NavBrand = {
 export function Header({
   storeName,
   logoUrl,
-  logoDesktopHeight = 80,
-  logoMobileHeight = 60,
+  logoDesktopHeight = 70,
+  logoMobileHeight = 44,
   categories = [],
   brands = [],
 }: {
@@ -53,14 +53,18 @@ export function Header({
     setMobileOpen(false);
   }
 
+  // Use the uploaded local logo unless an admin logo URL is provided.
+  const finalLogoUrl = logoUrl || "/images/logo.jpeg";
+
   return (
     <header
-      className="relative z-50 bg-[#F8F5F0] text-[#252223] border-b border-[#B88A78]/25"
+      className="relative z-50 bg-[#F8F5F0] text-[#252223] border-b border-[#B88A78]/20"
       style={{ minHeight: "var(--header-height)" }}
     >
       {/* Main Header */}
-      <div className="container relative h-[76px] md:h-[96px] flex items-center justify-between">
-        {/* Desktop Navigation - Right */}
+      <div className="container relative h-[72px] md:h-[92px] flex items-center justify-between">
+        
+        {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-7 text-[12px] lg:text-[13px] tracking-[0.04em]">
           <Link
             href="/"
@@ -131,38 +135,30 @@ export function Header({
         >
           <div
             className="relative flex items-center justify-center"
-            style={
-              {
-                "--logo-mobile-height": `${logoMobileHeight}px`,
-                "--logo-desktop-height": `${logoDesktopHeight}px`,
-              } as React.CSSProperties
-            }
+            style={{
+              width: "auto",
+              height: `${logoDesktopHeight}px`,
+            }}
           >
-            {logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={logoUrl}
-                alt={storeName}
-                className="relative w-auto object-contain max-w-[155px] md:max-w-[220px] h-[var(--logo-mobile-height)] md:h-[var(--logo-desktop-height)]"
-              />
-            ) : (
-              <span
-                className="whitespace-nowrap text-[#252223] font-heading font-medium leading-none"
-                style={{
-                  fontFamily:
-                    "'Noto Naskh Arabic', 'Amiri', 'Times New Roman', serif",
-                  fontSize: "clamp(30px, 3vw, 42px)",
-                  letterSpacing: "0.01em",
-                }}
-              >
-                الشعراوي
-              </span>
-            )}
+            {/* Desktop Logo */}
+            <img
+              src={finalLogoUrl}
+              alt={storeName}
+              className="hidden md:block w-auto max-w-[220px] h-[70px] object-contain"
+            />
+
+            {/* Mobile Logo */}
+            <img
+              src={finalLogoUrl}
+              alt={storeName}
+              className="md:hidden w-auto max-w-[145px] h-[44px] object-contain"
+            />
           </div>
         </Link>
 
-        {/* Left Actions */}
-        <div className="mr-auto flex items-center gap-1 md:gap-2">
+        {/* Actions */}
+        <div className="mr-auto flex items-center gap-0.5 md:gap-2">
+          
           {/* Search */}
           <button
             type="button"
@@ -174,7 +170,7 @@ export function Header({
           </button>
 
           {/* Cart */}
-          <div className="text-[#403B3C] hover:text-[#A87562] transition-colors">
+          <div className="w-10 h-10 flex items-center justify-center text-[#403B3C] hover:text-[#A87562] transition-colors">
             <CartBadge />
           </div>
 
@@ -191,7 +187,7 @@ export function Header({
         </div>
       </div>
 
-      {/* Elegant Rose-Gold Divider */}
+      {/* Elegant Divider */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[72%] h-px bg-gradient-to-r from-transparent via-[#B88A78]/45 to-transparent" />
 
       {/* Search Panel */}
@@ -338,7 +334,7 @@ function CloseIcon() {
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M6 6l12 12M18 6 6 18"
+        d="M6 6l12 12M18 6 6 18Z"
       />
     </svg>
   );
